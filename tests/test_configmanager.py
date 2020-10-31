@@ -52,4 +52,26 @@ class TestConfigManager:
         c('a', 1, type_=float)
         assert c.a == 1
         c.a = 2
-        assert c.a == 2
+        assert c.a == 2.0
+
+    def test_define_attribute_with_2_levels(self):
+        c = ConfigManager()
+        c('a.b', 1)
+        assert c.a.b == 1
+
+    def test_define_attribute_with_2_levels_and_typecast(self):
+        c = ConfigManager()
+        c('a.b', 1, str)
+        assert c.a.b == '1'
+
+    def test_define_attribute_with_2_levels_and_raise_type_error(self):
+        with pytest.raises(TypeError):
+            c = ConfigManager()
+            c('a.b', 1)
+            c.a.b = 'a'
+
+    def test_define_attribute_with_2_levels_and_prevent_parent_to_be_overwritten(self):
+        with pytest.raises(AttributeError):
+            c = ConfigManager()
+            c('a.b', 1, str)
+            c.a = 1

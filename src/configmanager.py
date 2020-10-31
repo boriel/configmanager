@@ -14,7 +14,7 @@ class Option:
         self._type = type_ if type_ is not None else type(value) if value is not None else None
 
         if value is None:
-            self._value = value
+            self._value = None
         else:
             self.value = value
 
@@ -41,10 +41,9 @@ OptionOrConfigManagerType = Union[Option, 'ConfigManager']
 
 class ConfigManager:
     NAMESPACE_SEPARATOR = '.'
-    __values: Dict[str, OptionOrConfigManagerType] = dict()
-    __namespace = ''
 
     def __init__(self, namespace=''):
+        self.__values: Dict[str, OptionOrConfigManagerType] = dict()
         self.__namespace = namespace
 
     def __key(self, key):
@@ -60,7 +59,7 @@ class ConfigManager:
     def __call__(self, key: str, value: Any = None, type_: type = None) -> OptionOrConfigManagerType:
         assert RE_VALIDATE_KEY.match(key), f"Invalid key '{key}'"
 
-        key, rest = f'{key}{self.NAMESPACE_SEPARATOR}'.split(self.NAMESPACE_SEPARATOR, 1)
+        key, *rest = key.split(self.NAMESPACE_SEPARATOR, 1)
         global_key = self.__key(key)
 
         if not rest:
@@ -68,7 +67,7 @@ class ConfigManager:
         else:
             obj = self.__values.get(global_key, ConfigManager(global_key))
             assert isinstance(obj, ConfigManager)
-            self.__values[global_key] = obj(rest.rstrip(self.NAMESPACE_SEPARATOR), type_, value)
+            self.__values[global_key] = obj(rest[0], value=value, type_=type_)
 
         return self
 
