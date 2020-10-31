@@ -71,7 +71,7 @@ class ConfigManager:
 
         return self
 
-    def __getattr__(self, item: str) -> Any:
+    def __getattr__(self, item: str) -> OptionOrConfigManagerType:
         if item.startswith(f'_{self.__class__.__name__}__'):
             return self.__dict__.get(item, self.__class__.__dict__.get(item))
 
@@ -88,3 +88,21 @@ class ConfigManager:
             result.value = value
         else:
             raise AttributeError(f"Cannot override inner attribute '{name}'. Delete it first")
+
+    def __getitem__(self, item) -> OptionOrConfigManagerType:
+        key, *rest = item.split(self.NAMESPACE_SEPARATOR, 1)
+        global_key = self.__key(key)
+        if not rest:
+            result = self.__values[global_key]
+            return result.value if isinstance(result, Option) else result
+
+        return self.__values[global_key][rest[0]]
+
+    def __setitem__(self, item, value):
+        key, *rest = item.split(self.NAMESPACE_SEPARATOR, 1)
+        global_key = self.__key(key)
+        if not rest:
+            self.__values[global_key].value = value
+            return
+
+        self.__values[global_key][rest[0]] = value

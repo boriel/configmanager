@@ -75,3 +75,37 @@ class TestConfigManager:
             c = ConfigManager()
             c('a.b', 1, str)
             c.a = 1
+
+    def test_define_attribute_and_get_it_as_dict(self):
+        c = ConfigManager()
+        c('a')
+        c.a = 1
+        assert c['a'] == 1
+
+    def test_define_2_level_attribute_and_get_it_as_dict(self):
+        c = ConfigManager()
+        c('a.b')
+        c.a.b = 1
+        assert c['a'].b == 1
+        assert c['a.b'] == 1
+
+    def test_set_1_level_item(self):
+        c = ConfigManager()
+        c('a')
+        assert c.a is None
+        c['a'] = 1
+        assert c.a == 1
+
+    def test_set_1_level_non_existing_item_raises_error(self):
+        with pytest.raises(KeyError):
+            c = ConfigManager()
+            c['a'] = 1
+
+    def test_set_2_level_setting_item(self):
+        c = ConfigManager()
+        c('a.b', type_=int)
+        c['a.b'] = '1'
+        assert c.a.b == 1
+        assert c['a.b'] == 1
+        assert c.a['b'] == 1
+        assert c['a'].b == 1
