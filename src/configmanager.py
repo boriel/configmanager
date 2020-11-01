@@ -94,7 +94,9 @@ class ConfigManager:
             result = self.__values[key]
             return result.value if isinstance(result, Option) else result
 
-        return self.__values[key][rest[0]]
+        obj = self.__values[key]
+        assert isinstance(obj, ConfigManager)
+        return obj[rest[0]]
 
     def __setitem__(self, item, value):
         key, *rest = item.split(self.NAMESPACE_SEPARATOR, 1)
