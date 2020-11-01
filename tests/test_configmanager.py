@@ -118,3 +118,18 @@ class TestConfigManager:
         del c.a.b
         with pytest.raises(AttributeError):
             assert c.a.b == 1
+
+    def test_del_item(self):
+        c = ConfigManager()
+        c('a', 1)
+        del c['a']
+        with pytest.raises(AttributeError):
+            c.a = 1
+
+    def test_del_2_level_item(self):
+        c = ConfigManager()
+        c('a.b', 1)
+        del c['a.b']
+        assert isinstance(c.a, ConfigManager)
+        with pytest.raises(AttributeError):
+            c.a.b = 1

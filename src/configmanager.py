@@ -103,3 +103,11 @@ class ConfigManager:
             return
 
         self.__values[key][rest[0]] = value
+
+    def __delitem__(self, item):
+        key, *rest = item.split(self.NAMESPACE_SEPARATOR, 1)
+        if not rest:
+            del self.__values[key]
+            return
+
+        del self.__values[key][rest[0]]
