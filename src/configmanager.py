@@ -42,14 +42,15 @@ OptionOrConfigManagerType = Union[Option, 'ConfigManager']
 class ConfigManager:
     NAMESPACE_SEPARATOR = '.'
 
-    def __init__(self):
+    def __init__(self, strict: bool = False):
         self.__values: Dict[str, OptionOrConfigManagerType] = dict()
+        self.__strict = strict
 
     def __get_attr(self, key):
-        if key not in self.__values:
+        if self.__strict and key not in self.__values:
             raise AttributeError(f"Invalid attribute '{key}'")
 
-        return self.__values[key]
+        return self.__values.get(key, None)
 
     def __call__(self, key: str, value: Any = None, type_: type = None) -> OptionOrConfigManagerType:
         assert RE_VALIDATE_KEY.match(key), f"Invalid key '{key}'"
@@ -58,7 +59,7 @@ class ConfigManager:
         if not rest:
             self.__values[key] = Option(value=value, type_=type_)
         else:
-            obj = self.__values.get(key, ConfigManager())
+            obj = self.__values.get(key, ConfigManager(strict=self.__strict))
             assert isinstance(obj, ConfigManager)
             self.__values[key] = obj(rest[0], value=value, type_=type_)
 
@@ -71,19 +72,25 @@ class ConfigManager:
         result = self.__get_attr(item)
         return result.value if isinstance(result, Option) else result
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name, value) -> Any:
         if name.startswith(f'_{self.__class__.__name__}__'):
             self.__dict__[name] = value
-            return
+            return value
 
         result = self.__get_attr(name)
-        if isinstance(result, Option):
+        if result is None:
+            self(key=name, value=value)
+            return value
+        elif isinstance(result, Option):
             result.value = value
+            return value
         else:
             raise AttributeError(f"Cannot override inner attribute '{name}'. Delete it first")
 
     def __delattr__(self, key):
         if key not in self.__values:
+            if not self.__strict:
+                return
             raise AttributeError(f"'{self.__class__.__name__}' has no attribute '{key}'")
 
         del self.__values[key]
