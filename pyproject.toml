@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "configmanager"
+version = "0.1.0"
+description = "Simple config key-value storage"
+authors = ["Jose Rodriguez <boriel@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.1.2"
+flake8 = "^3.8.4"
+mypy = "^0.790"
+tox = "^3.20.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
