@@ -42,32 +42,25 @@ OptionOrConfigManagerType = Union[Option, 'ConfigManager']
 class ConfigManager:
     NAMESPACE_SEPARATOR = '.'
 
-    def __init__(self, namespace=''):
+    def __init__(self):
         self.__values: Dict[str, OptionOrConfigManagerType] = dict()
-        self.__namespace = namespace
-
-    def __key(self, key):
-        return f'{self.__namespace}{self.NAMESPACE_SEPARATOR}{key}'
 
     def __get_attr(self, key):
-        global_key = self.__key(key)
-        if global_key not in self.__values:
+        if key not in self.__values:
             raise AttributeError(f"Invalid attribute '{key}'")
 
-        return self.__values[global_key]
+        return self.__values[key]
 
     def __call__(self, key: str, value: Any = None, type_: type = None) -> OptionOrConfigManagerType:
         assert RE_VALIDATE_KEY.match(key), f"Invalid key '{key}'"
 
         key, *rest = key.split(self.NAMESPACE_SEPARATOR, 1)
-        global_key = self.__key(key)
-
         if not rest:
-            self.__values[global_key] = Option(value=value, type_=type_)
+            self.__values[key] = Option(value=value, type_=type_)
         else:
-            obj = self.__values.get(global_key, ConfigManager(global_key))
+            obj = self.__values.get(key, ConfigManager())
             assert isinstance(obj, ConfigManager)
-            self.__values[global_key] = obj(rest[0], value=value, type_=type_)
+            self.__values[key] = obj(rest[0], value=value, type_=type_)
 
         return self
 
@@ -89,20 +82,24 @@ class ConfigManager:
         else:
             raise AttributeError(f"Cannot override inner attribute '{name}'. Delete it first")
 
+    def __delattr__(self, key):
+        if key not in self.__values:
+            raise AttributeError(f"'{self.__class__.__name__}' has no attribute '{key}'")
+
+        del self.__values[key]
+
     def __getitem__(self, item) -> OptionOrConfigManagerType:
         key, *rest = item.split(self.NAMESPACE_SEPARATOR, 1)
-        global_key = self.__key(key)
         if not rest:
-            result = self.__values[global_key]
+            result = self.__values[key]
             return result.value if isinstance(result, Option) else result
 
-        return self.__values[global_key][rest[0]]
+        return self.__values[key][rest[0]]
 
     def __setitem__(self, item, value):
         key, *rest = item.split(self.NAMESPACE_SEPARATOR, 1)
-        global_key = self.__key(key)
         if not rest:
-            self.__values[global_key].value = value
+            self.__values[key].value = value
             return
 
-        self.__values[global_key][rest[0]] = value
+        self.__values[key][rest[0]] = value

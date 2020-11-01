@@ -5,12 +5,7 @@ from src.configmanager import ConfigManager
 
 class TestConfigManager:
     def test_inits_ok(self):
-        c = ConfigManager()
-        assert c._ConfigManager__namespace == ''
-
-    def test_init_with_namespace_ok(self):
-        c = ConfigManager('.namespace')
-        assert c._ConfigManager__namespace == '.namespace'
+        assert ConfigManager() is not None
 
     def test_get_undefined_attr_raises_attribute_error(self):
         with pytest.raises(AttributeError):
@@ -109,3 +104,17 @@ class TestConfigManager:
         assert c['a.b'] == 1
         assert c.a['b'] == 1
         assert c['a'].b == 1
+
+    def test_del_attr(self):
+        c = ConfigManager()
+        c('a.b', 1)
+        del c.a
+        with pytest.raises(AttributeError):
+            assert c.a is None
+
+    def test_del_2_level_attr(self):
+        c = ConfigManager()
+        c('a.b', 1)
+        del c.a.b
+        with pytest.raises(AttributeError):
+            assert c.a.b == 1
