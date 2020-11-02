@@ -81,19 +81,17 @@ class ConfigManager:
             self.__dict__[name] = value
             return value
 
-        result = self.__get_attr(name)
-        if result is None:
+        attr = self.__get_attr(name)
+        if attr is None:
             self(key=name, value=value)
-            return value
-        elif isinstance(result, Option):
-            result.value = value
-            return value
+        elif isinstance(attr, Option):
+            attr.value = value
         else:
             if self.__strict:
                 raise AttributeError(f"Cannot override inner attribute '{name}'. Delete it first")
             self.__values[name] = Option()
             self.__values[name].value = value
-            return value
+        return value
 
     def __delattr__(self, key):
         if key not in self.__values:
