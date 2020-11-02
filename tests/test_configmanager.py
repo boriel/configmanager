@@ -231,11 +231,6 @@ class TestConfigManager:
         c['a'] = 1
         assert c.a == 1
 
-    def test_set_1_level_non_existing_item_raises_error(self):
-        with pytest.raises(KeyError):
-            c = ConfigManager()
-            c['a'] = 1
-
     def test_set_2_level_setting_item(self):
         c = ConfigManager()
         c('a.b', type_=int)
@@ -285,3 +280,18 @@ class TestConfigManager:
         c('a')
         del c.a
         del c.a
+
+    def test_set_1_level_non_existing_item_in_strict_mode_raises_error(self):
+        with pytest.raises(KeyError):
+            c = ConfigManager(strict=True)
+            c['a'] = 1
+
+    def test_set_1_level_non_existing_item(self):
+        c = ConfigManager()
+        c['a'] = 1
+        assert c.a == 1
+
+    def test_set_2_level_non_existing_item(self):
+        c = ConfigManager()
+        c['a.b'] = 1
+        assert c.a.b == 1

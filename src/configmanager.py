@@ -105,13 +105,19 @@ class ConfigManager:
         assert isinstance(obj, ConfigManager)
         return obj[rest[0]]
 
-    def __setitem__(self, item, value):
+    def __setitem__(self, item, value) -> Any:
         key, *rest = item.split(self.NAMESPACE_SEPARATOR, 1)
         if not rest:
-            self.__values[key].value = value
-            return
+            if self.__strict and key not in self.__values:
+                raise KeyError(key)
+            self.__setattr__(key, value)
+        else:
+            obj = self.__values.get(key, ConfigManager(strict=self.__strict))
+            assert isinstance(obj, ConfigManager)
+            self.__values[key] = obj
+            obj[rest[0]] = value
 
-        self.__values[key][rest[0]] = value
+        return value
 
     def __delitem__(self, item):
         key, *rest = item.split(self.NAMESPACE_SEPARATOR, 1)
