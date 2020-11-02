@@ -59,6 +59,7 @@ class ConfigManager:
         if not rest:
             if not self.__strict and value is None and type_ is None:
                 self.__values[key] = ConfigManager(strict=self.__strict)
+                return self.__values[key]
             else:
                 self.__values[key] = Option(value=value, type_=type_)
         else:

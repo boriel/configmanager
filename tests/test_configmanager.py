@@ -299,3 +299,9 @@ class TestConfigManager:
         c = ConfigManager()
         c('a')
         c.a.b = 1
+
+    def test_set_2_level_namespace_one_by_one(self):
+        c = ConfigManager()
+        c('a')('b')
+        c.a.b.d = 1
+        assert c['a.b.d'] == 1
