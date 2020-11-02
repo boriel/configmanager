@@ -155,7 +155,7 @@ class TestConfigManager:
     def test_define_attribute_with_no_type_and_no_value(self):
         c = ConfigManager()
         c('a')
-        assert c.a is None
+        assert isinstance(c.a, ConfigManager)
 
     def test_define_attribute_with_no_type_and_no_value_can_be_set_any_value(self):
         c = ConfigManager()
@@ -205,11 +205,10 @@ class TestConfigManager:
             c('a.b', 1)
             c.a.b = 'a'
 
-    def test_define_attribute_with_2_levels_and_prevent_parent_to_be_overwritten(self):
-        with pytest.raises(AttributeError):
-            c = ConfigManager()
-            c('a.b', 1, str)
-            c.a = 1
+    def test_paren_attribute_in_non_strict_mode_can_be_overwritten(self):
+        c = ConfigManager()
+        c('a.b', 1, str)
+        c.a = 1
 
     def test_define_attribute_and_get_it_as_dict(self):
         c = ConfigManager()
@@ -227,7 +226,7 @@ class TestConfigManager:
     def test_set_1_level_item(self):
         c = ConfigManager()
         c('a')
-        assert c.a is None
+        assert isinstance(c.a, ConfigManager)
         c['a'] = 1
         assert c.a == 1
 
@@ -295,3 +294,8 @@ class TestConfigManager:
         c = ConfigManager()
         c['a.b'] = 1
         assert c.a.b == 1
+
+    def test_set_namespacem(self):
+        c = ConfigManager()
+        c('a')
+        c.a.b = 1

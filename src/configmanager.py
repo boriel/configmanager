@@ -57,7 +57,10 @@ class ConfigManager:
 
         key, *rest = key.split(self.NAMESPACE_SEPARATOR, 1)
         if not rest:
-            self.__values[key] = Option(value=value, type_=type_)
+            if not self.__strict and value is None and type_ is None:
+                self.__values[key] = ConfigManager(strict=self.__strict)
+            else:
+                self.__values[key] = Option(value=value, type_=type_)
         else:
             obj = self.__values.get(key, ConfigManager(strict=self.__strict))
             assert isinstance(obj, ConfigManager)
@@ -85,7 +88,11 @@ class ConfigManager:
             result.value = value
             return value
         else:
-            raise AttributeError(f"Cannot override inner attribute '{name}'. Delete it first")
+            if self.__strict:
+                raise AttributeError(f"Cannot override inner attribute '{name}'. Delete it first")
+            self.__values[name] = Option()
+            self.__values[name].value = value
+            return value
 
     def __delattr__(self, key):
         if key not in self.__values:
